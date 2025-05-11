@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗑️ スレッド削除完了</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+    .card {
+      background: white;
+      padding: 2rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    .card h1 {
+      font-size: 1.6rem;
+      color: #2e7d32;
+      margin-bottom: 1rem;
+    }
+    .card p {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      word-break: break-word;
+    }
+    .btn {
+      display: inline-block;
+      background: #1976d2;
+      color: white;
+      text-decoration: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 30px;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #125ea6;
+    }
+    .icon {
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+      color: #2e7d32;
+    }
+
+    @media (max-width: 480px) {
+      .card h1 {
+        font-size: 1.4rem;
+      }
+      .card p {
+        font-size: 0.95rem;
+      }
+      .btn {
+        font-size: 0.95rem;
+        padding: 0.6rem 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="icon">✅</div>
+    <h1>スレッドを削除しました</h1>
+    <p><%= message %></p>
+    <a href="/clubs/<%= clubId %>" class="btn">スレッド一覧へ戻る</a>
+  </div>
+
+</body>
+</html>

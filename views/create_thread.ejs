@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>新しいスレッド作成</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .form-container {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      color: #333;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #0077cc;
+      outline: none;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .submit-button {
+      width: 100%;
+      background-color: #0077cc;
+      color: white;
+      padding: 0.85rem;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .submit-button:hover {
+      background-color: #005fa3;
+    }
+
+    .error-message {
+      background-color: #ffe5e5;
+      color: #cc0000;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .back-link {
+      display: block;
+      margin-top: 1.5rem;
+      text-align: center;
+      color: #0077cc;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <section class="form-container">
+    <div class="form-header">
+      <h1>新しいスレッドを作成</h1>
+      <p><%= club.name %> </p>
+    </div>
+
+    <% if (error) { %>
+      <div class="error-message"><%= error %></div>
+    <% } %>
+
+    <form action="/confirm-thread" method="POST">
+      <input type="hidden" name="clubId" value="<%= club.id %>">
+
+      <div class="form-group">
+        <label for="title">タイトル</label>
+        <input id="title" type="text" name="title" placeholder="タイトルを入力" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">内容</label>
+        <textarea id="description" name="description" placeholder="内容を詳しく書いてください" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="deletePassword">削除用パスワード</label>
+        <input id="deletePassword" type="password" name="deletePassword" placeholder="半角英数字8〜12文字" required pattern="[A-Za-z0-9]{8,12}">
+      </div>
+
+      <button type="submit" class="submit-button">投稿内容を確認</button>
+    </form>
+
+    <a class="back-link" href="/clubs/<%= club.id %>/threads">← スレッド一覧に戻る</a>
+  </section>
+</body>
+</html>

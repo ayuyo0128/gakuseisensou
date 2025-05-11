@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= club.name %> - クラブ詳細</title>
+  <style>
+    /* ベース */
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #fafafa;
+      color: #333;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ヘッダー */
+    .back-button {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #0077cc;
+      font-size: 1rem;
+    }
+    .back-button:hover { text-decoration: underline; }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+      color: #222;
+    }
+
+    /* ソート */
+    .sort-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .sort-buttons a {
+      flex: 1 1 45%;
+      text-align: center;
+      padding: 5px 0;
+      background: #0077cc;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .sort-buttons a:hover { background: #005fa3; }
+
+    /* スレッド一覧 */
+    .thread-list h3 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .thread-item {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 3px;
+      margin-bottom: 7px;
+      transition: box-shadow .2s;
+    }
+    .thread-item:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .thread-item a {
+      font-size: 1.1rem;
+      color: #0077cc;
+    }
+    .thread-item a:hover { text-decoration: underline; }
+    .thread-meta {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    /* ページネーション */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 24px 0;
+    }
+    .pagination a,
+    .pagination span {
+      flex: 1 1 auto;
+      text-align: center;
+      padding: 12px 0;
+      background: #0077cc;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .pagination span { background: #444; }
+    .pagination a:hover { background: #005fa3; }
+
+    /* 新規スレッド作成ボタン */
+    .create-thread-button {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto 40px auto;
+      padding: 14px 0;
+      background: #28a745;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      font-size: 1.1rem;
+    }
+    .create-thread-button:hover { background: #218838; }
+
+    /* モバイル特化（600px以下） */
+    @media screen and (max-width: 600px) {
+      body { padding: 12px; }
+      header h1 { font-size: 1.6rem; }
+      .sort-buttons a,
+      .create-thread-button,
+      .pagination a,
+      .pagination span {
+        font-size: 1.0rem;
+        padding: 14px 0;
+      }
+      .thread-item { padding: 3px; }
+    }
+  </style>
+</head>
+<body>
+  <a href="/clubs" class="back-button">← 部活一覧に戻る</a>
+
+  <header>
+    <h1><%= club.name %></h1>
+  </header>
+
+  <!-- ソートボタン -->
+  <section class="sort-buttons">
+    <a href="/clubs/<%= club.id %>?sort=newest&page=1">新しい順</a>
+    <a href="/clubs/<%= club.id %>?sort=popular&page=1">人気順</a>
+  </section>
+
+  <!-- スレッド一覧 -->
+  <section class="thread-list">
+    <h3>関連スレッド</h3>
+    <% if (threads.length > 0) { %>
+      <% threads.forEach(thread => { %>
+        <div class="thread-item">
+          <a href="/threads/<%= thread.id %>"><%= thread.title %></a>
+          <div class="thread-meta">
+            レス数: <%= thread.response_count || 0 %>｜
+            投稿日: 
+            <% const d = Date.parse(thread.created_at); %>
+            <%= isNaN(d) ? '未設定' : new Date(d).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'}) %>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <p style="text-align:center;">まだスレッドがありません。</p>
+    <% } %>
+  </section>
+
+  <!-- ページネーション -->
+  <div class="pagination">
+    <% if (currentPage > 1) { %>
+      <a href="/clubs/<%= club.id %>?sort=<%= sort %>&page=<%= currentPage - 1 %>">前へ</a>
+    <% } %>
+    <span>ページ <%= currentPage %> / <%= totalPages %></span>
+    <% if (currentPage < totalPages) { %>
+      <a href="/clubs/<%= club.id %>?sort=<%= sort %>&page=<%= currentPage + 1 %>">次へ</a>
+    <% } %>
+  </div>
+
+  <!-- 新規スレッド作成 -->
+  <a href="/clubs/<%= club.id %>/threads/new" class="create-thread-button">新しいスレッドを作成</a>
+</body>
+</html>

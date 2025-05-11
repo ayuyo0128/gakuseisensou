@@ -1,0 +1,90 @@
+body {
+  font-family: 'Arial', sans-serif; /* より親しみやすいフォント */
+  background-color: #f4f4f9; /* 明るく優しい背景色 */
+  color: #333; /* 文字色を落ち着いたグレーに */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+  background-color: #4CAF50; /* 緑色を背景にして学校感を演出 */
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+h1 {
+  margin: 0;
+}
+
+.club-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 15px; /* 部活間の距離を少し広げる */
+}
+
+.club-item {
+  background: white;
+  border: 2px solid #4CAF50; /* 部活項目を区切るための緑のボーダー */
+  border-radius: 8px;
+  padding: 10px;
+  width: 90%; /* 余白を取ってスッキリとした印象に */
+  max-width: 500px;
+  text-align: center;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 軽い影をつけて、カードのように浮き立たせる */
+}
+
+.club-item:hover {
+  transform: translateY(-5px); /* 部活をクリックしやすくするための浮き上がり効果 */
+}
+
+.club-item a {
+  font-size: 1.3rem; /* 部活名を大きくして、目立たせる */
+  color: #333;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.club-item a:hover {
+  color: #4CAF50; /* ホバー時にリンクの色を変えて視覚的な反応を加える */
+}
+
+.club-description {
+  font-size: 1rem;
+  color: #777; /* 説明文は少し薄い色で目立たせすぎないように */
+  margin-top: 5px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #388E3C; /* ボタンのホバー時の色変更 */
+}
+/* styles.css */
+header a {
+  color: #1976d2;  /* リンクの色 */
+  text-decoration: none;  /* 下線を消す */
+  font-weight: bold;  /* 太文字 */
+}
+
+header a:hover {
+  color: #125ea6;  /* ホバー時の色 */
+  text-decoration: underline;  /* ホバー時に下線を追加 */
+}

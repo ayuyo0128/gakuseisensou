@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投稿の確認</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+      margin: auto;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      margin-top: 10px;
+      margin-right: 10px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .submit-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .back-btn {
+      background-color: #ccc;
+    }
+
+    .warning {
+      border: 2px solid red;
+      padding: 15px;
+      margin-bottom: 20px;
+      background-color: #fff0f0;
+      font-size: 0.95rem;
+    }
+
+    .warning h3 {
+      color: red;
+      font-size: 1.2em;
+      margin-top: 0;
+    }
+
+    form {
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+
+      .btn {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      form {
+        display: block;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>以下を踏まえてこの内容で投稿しますか？</h2>
+    <p><strong>名前:</strong> <%= name || '名無しの学生' %></p>
+    <p><strong>コメント:</strong></p>
+    <p><%= content %></p>
+
+    <div class="warning">
+      <h3>⚠️【法的リスクに関する最終警告】⚠️</h3>
+      <p>
+        この掲示板は<strong>誰でも自由に投稿可能</strong>な匿名掲示板です。<br>
+        しかしながら、投稿された内容が
+        <span style="color: red;"><strong>他人への誹謗中傷・名誉毀損・個人情報の暴露・業務妨害・著作権侵害・肖像権侵害・脅迫・侮辱・信用毀損・不正アクセス助長・わいせつ表現</strong></span>
+        などに該当する場合、<strong style="color: red;">民事訴訟や刑事事件</strong>に発展する可能性があります。
+      </p>
+      <p>
+        具体的には、<strong>数百万円〜数千万円規模の損害賠償請求</strong>、<strong>刑事告訴・逮捕・前科</strong>など、
+        <span style="text-decoration: underline;">あなた自身の人生に深刻な影響</span>を及ぼす結果となる可能性があります。
+      </p>
+      <p>
+        本掲示板の運営者およびサーバー管理者は、投稿内容に一切関与しておらず、
+        <strong style="color: red;">投稿者本人がすべての法的責任を単独で負う</strong>ことに、あなたは同意したものとみなされます。
+      </p>
+      <p>
+        万が一トラブルが発生した場合、運営側は<strong>法的開示請求</strong>に基づき、必要に応じて投稿者のIPアドレスや接続情報を開示する義務があります。<br>
+        <span style="color: red;">そのため、匿名であっても完全な匿名性は保証されません。</span>
+      </p>
+      <p>
+        あなたが今入力しようとしている投稿内容は、投稿と同時にインターネット上に公開され、
+        <strong>第三者がスクリーンショット・保存・拡散</strong>することも可能です。<br>
+        一度投稿された内容は完全な削除が不可能であり、<strong>一生残る</strong>可能性があります。
+      </p>
+      <p style="font-weight: bold;">
+        投稿を行うことで、あなたは以上すべての内容を理解し、
+        <span style="text-decoration: underline; color: red;">自己責任に基づき、法的リスクを承知の上で投稿する</span>
+        ことに<strong>同意した</strong>とみなします。
+      </p>
+    </div>
+
+    <form action="/threads/<%= threadId %>/responses" method="POST">
+      <input type="hidden" name="name" value="<%= name %>">
+      <input type="hidden" name="content" value="<%= content %>">
+      <button type="submit" class="btn submit-btn">✅ 投稿する</button>
+    </form>
+
+    <form action="/threads/<%= threadId %>" method="GET">
+      <button type="submit" class="btn back-btn">← 戻る</button>
+    </form>
+  </div>
+</body>
+</html>

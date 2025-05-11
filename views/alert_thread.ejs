@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>投稿前のご確認</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      line-height: 1.8;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    .warning-box {
+      border: 2px solid #d32f2f;
+      background-color: #ffebee;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+    }
+    .warning-box h1 {
+      color: #d32f2f;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .warning-box ul {
+      margin-left: 1.2rem;
+      list-style-type: disc;
+    }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .button-group button,
+    .button-group a {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      color: white;
+    }
+    .btn-confirm {
+      background-color: #1976d2;
+    }
+    .btn-confirm:hover {
+      background-color: #155a9a;
+    }
+    .btn-back {
+      background-color: #757575;
+    }
+    .btn-back:hover {
+      background-color: #5c5c5c;
+    }
+    
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <div class="warning-box">
+    <h1>⚠️ 投稿前の最終確認 ⚠️</h1>
+    <p>
+      本掲示板は、利用者が自由にスレッドを作成・投稿できる匿名型掲示板です。投稿内容は全て利用者の責任において行われるものであり、当運営は一切の責任を負いません。
+    </p>
+    <p>以下の内容を投稿することは禁止されています：</p>
+    <ul>
+      <li>他者の名誉や信用を毀損する中傷、侮辱</li>
+      <li>個人情報、住所、電話番号、メールアドレス等の晒し行為</li>
+      <li>虚偽情報やデマの拡散</li>
+      <li>違法行為の助長、犯罪予告・脅迫</li>
+      <li>差別的、暴力的、性的な表現</li>
+      <li>その他、社会的常識やモラルに反する投稿</li>
+    </ul>
+    <p>
+      上記の禁止事項に違反した投稿に関しては、投稿者が民事・刑事責任を問われる可能性があります。また、法的請求や捜査機関からの照会により、必要に応じてIPアドレスや接続ログ等の情報を開示することがあります。
+    </p>
+    <p>
+      本サービスの管理者および運営者は、利用者の投稿内容について一切の責任を負わず、第三者からの損害賠償請求、訴訟、クレーム等についても一切関知いたしません。
+    </p>
+    <p>
+      以上を熟読のうえ、自己の責任において投稿することに同意される場合は、以下の「投稿を確定する」ボタンを押してください。
+    </p>
+  </div>
+
+  <div class="button-group">
+    <!-- 戻るボタン -->
+    <a href="javascript:history.back()" class="btn-back">← 入力画面に戻る</a>
+
+    <!-- 投稿確定ボタン -->
+    <form action="/clubs/<%= clubId %>/threads" method="POST" style="display:inline;">
+      <input type="hidden" name="title"       value="<%= title %>">
+      <input type="hidden" name="description" value="<%= description %>">
+      <input type="hidden" name="deletePassword" value="<%= deletePassword %>">
+      <button type="submit" class="btn-confirm">投稿を確定する</button>
+    </form>
+  </div>
+  
+</body>
+</html>

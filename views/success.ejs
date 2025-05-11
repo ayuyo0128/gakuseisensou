@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投稿完了</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(to bottom, #f0fff0, #d0f5d0);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .success-box {
+      background-color: #ffffff;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+      width: 90%;
+      max-width: 400px;
+      box-sizing: border-box;
+    }
+
+    .success-box h1 {
+      font-size: 24px;
+      color: #2e8b57;
+      margin-bottom: 10px;
+    }
+
+    .success-box p {
+      font-size: 16px;
+      color: #444;
+      margin-bottom: 25px;
+    }
+
+    .return-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #2e8b57;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      font-size: 16px;
+    }
+
+    .return-link:hover {
+      background-color: #256f47;
+    }
+
+    .sns-section {
+      margin-top: 30px;
+    }
+
+    .sns-message {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .sns-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sns-links a {
+      font-size: 18px;
+      text-decoration: none;
+      color: #444;
+      font-weight: bold;
+      transition: transform 0.2s, color 0.3s;
+    }
+
+    .sns-links a:hover {
+      transform: scale(1.2);
+      color: #e91e63;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="success-box">
+    <h1>✅ レスの投稿が完了しました！</h1>
+    <p>あなたのコメントは正常に投稿されました。</p>
+    <a class="return-link" href="/threads/<%= threadId %>">スレッドに戻る</a>
+
+    <div class="sns-section">
+      <div class="sns-message">良かったらSNSもフォローしてね👇</div>
+      <div class="sns-links">
+        <a href="https://www.instagram.com/riku._genius" target="_blank" title="Instagram">📷 Instagram</a>
+        <a href="https://www.tiktok.com/@riku6701" target="_blank" title="TikTok">🎵 TikTok</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
