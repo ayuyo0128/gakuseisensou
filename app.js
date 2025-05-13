@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const app = express();
 app.use(express.urlencoded({ extended: true })); 
+const crypto = require('crypto');
 
 // SQLite データベース接続
 const db = new sqlite3.Database(path.join(__dirname, 'database.db'), (err) => {
@@ -54,12 +55,8 @@ db.serialize(() => {
     )
   `);
   const crypto = require('crypto');
-
-  function generateAnonId(ip, dateStr) {
-    const hash = crypto.createHash('sha256');
-    hash.update(ip + dateStr);
-    return 'ID:' + hash.digest('hex').substring(0, 8); // 例: ID:1a2b3c4d
-  }
+  app.set('trust proxy', true);
+  
   
   // 初期部活データの挿入
   db.get('SELECT COUNT(*) AS count FROM clubs', (err, row) => {
@@ -200,6 +197,7 @@ app.get('/clubs/:club_id/threads', (req, res) => {
 });
 
 
+
 // スレッド作成処理
 app.post('/clubs/:club_id/threads', (req, res) => {
   const club_id = req.params.club_id; // ★ これが必要
@@ -223,13 +221,18 @@ app.post('/clubs/:club_id/threads', (req, res) => {
 
       const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
       const formattedTime = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${weekdays[now.getDay()]}） ${now.getHours()}時${now.getMinutes()}分`;
-      const ip = req.ip || 'unknown';
-      const dateStr = now.toISOString().split('T')[0];
+      function getClientIp(req) {
+        const forwarded = req.headers['x-forwarded-for'];
+        return forwarded ? forwarded.split(',')[0].trim() : req.connection.remoteAddress || req.ip;
+      }
+      
+      const ip = getClientIp(req);
+      const dateStr = new Date().toISOString().split('T')[0];
       const anonId = generateAnonId(ip, dateStr);
-
       db.run(
-        'INSERT INTO responses (thread_id, text, created_at, name, anon_id) VALUES (?, ?, ?, ?, ?)',
-        [threadId, description, formattedTime, name, anonId],
+        'INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
+        [threadId, description, formattedTime, name, anonId, ip],
+      
         (err2) => {
           if (err2) return res.status(500).send('1レス目の作成に失敗しました');
           res.redirect(`/success-thread?threadId=${threadId}&clubId=${club_id}`);
@@ -264,36 +267,42 @@ app.get('/threads/:id', (req, res) => {
 app.get('/threads/:id/alert', (req, res) => {
   res.render('alert', { threadId: req.params.id });
 });
+function generateAnonId(ip, dateStr) {
+  const hash = crypto.createHash('sha256');
+  hash.update(ip + dateStr); // IPアドレスと日付を結合
+  return hash.digest('hex').slice(0, 16); // 最初の16文字を仮IDとして使用
+}
 
 // レス投稿処理
+// クライアントのIPアドレスを取得する関数
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  return forwarded ? forwarded.split(',')[0].trim() : req.connection.remoteAddress || req.ip;
+}
+
 app.post('/threads/:id/responses', (req, res) => {
   const threadId = req.params.id;
   const content = req.body.content?.trim();
   const name = req.body.name?.trim() || '名無しの学生';
 
-  if (!content) return res.status(400).send('コメント内容を入力してください');
-
   const now = new Date();
-  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-  const formattedTime = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${weekdays[now.getDay()]}） ${now.getHours()}時${now.getMinutes()}分`;
-  const ip = req.ip || 'unknown';
-  const dateStr = now.toISOString().split('T')[0];
-  const anonId = generateAnonId(ip, dateStr); // ← ここで仮IDを作る！
+  const weekdays = ['日','月','火','水','木','金','土'];
+  const formattedTime = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${weekdays[now.getDay()]}） `
+    + `${now.getHours()}時${now.getMinutes()}分`;
+
+  const ip = getClientIp(req);  // クライアントIPを取得
+  const dateStr = now.toISOString().split('T')[0];  // 今日の日付
+  const anonId = generateAnonId(ip, dateStr);  // 仮IDを生成
+
   db.run(
-    'INSERT INTO responses (thread_id, text, created_at, name, ip_address, anon_id) VALUES (?, ?, ?, ?, ?, ?)',
-    [threadId, content, formattedTime, name, ip, anonId],
+    'INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
+    [threadId, content, formattedTime, name, anonId, ip],
     (err) => {
-      if (err) {
-        console.error('レス保存エラー:', err.message);
-        return res.status(500).send(`レス保存に失敗しました: ${err.message}`);
-      }
+      if (err) return res.status(500).send('レス保存に失敗しました');
       res.redirect(`/threads/${threadId}/success`);
     }
   );
-  
-  
 });
-
 
 // 確認画面（フォーム送信 → 投稿前に alert.ejs を表示）
 app.post('/alert', (req, res) => {
@@ -366,15 +375,11 @@ function getJapanTime() {
   const japanTime = new Date().toLocaleString('ja-JP', options);
   return japanTime.replace(/(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+)/, '$3-$1-$2 $4:$5:$6');
 }
-const crypto = require('crypto');
-
-function generateAnonId(ip, dateStr) {
-  const base = ip + dateStr;
-  return crypto.createHash('sha256').update(base).digest('hex').slice(0, 8);
-}
 
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// サーバー起動
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
 });
+
+
