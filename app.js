@@ -277,7 +277,7 @@ app.post('/threads/:id/delete', async (req, res) => {
   }
 });
 
-// サーバ起動
-app.listen(3000, () => {
-  console.log('アプリケーションがポート3000で起動しました');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
