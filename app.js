@@ -1,385 +1,283 @@
+// app.js
 const express = require('express');
+const pool = require('./database');      // PostgreSQL プール
 const bodyParser = require('body-parser');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const app = express();
-app.use(express.urlencoded({ extended: true })); 
 const crypto = require('crypto');
+const app = express();
 
-// SQLite データベース接続
-const db = new sqlite3.Database(path.join(__dirname, 'database.db'), (err) => {
-  if (err) {
-    console.error('データベース接続エラー:', err);
-  } else {
-    console.log('データベース接続成功');
-  }
-});
-
-// ミドルウェア
+app.set('trust proxy', true);
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
-// --- テーブル作成 ---
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS clubs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT,
-      description TEXT
-    )
-  `);
+// --- ユーティリティ関数 ---
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  return forwarded
+    ? forwarded.split(',')[0].trim()
+    : req.connection.remoteAddress || req.ip;
+}
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS threads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      club_id INTEGER,
-      title TEXT,
-      description TEXT,
-      created_at TEXT,
-      deletePassword TEXT,
-      FOREIGN KEY(club_id) REFERENCES clubs(id)
-    )
-  `);
+function generateAnonId(ip, dateStr) {
+  const hash = crypto.createHash('sha256');
+  hash.update(ip + dateStr);
+  return hash.digest('hex').slice(0, 8);
+}
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS responses (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      thread_id INTEGER,
-      text TEXT,
-      name TEXT,
-      created_at TEXT,
-      anon_id TEXT,
-      ip_address TEXT,
-      FOREIGN KEY(thread_id) REFERENCES threads(id)
-    )
-  `);
-  const crypto = require('crypto');
-  app.set('trust proxy', true);
-  
-  
-  // 初期部活データの挿入
-  db.get('SELECT COUNT(*) AS count FROM clubs', (err, row) => {
-    if (row.count === 0) {
-      const clubs = [
-        { name: 'ニート部', description: 'ニートの集まり' },
-        { name: '暇部', description: '暇人集合' },
-        { name: '愚痴部', description: '日頃の愚痴を吐き出す場所' },
-        { name: '腐女子部', description: '腐女子による腐女子のための' },
-        { name: '討論部', description: '熱く議論したい人たちへ' },
-        { name: '恋愛部', description: '恋バナしよ' },
-        { name: '勉強部', description: '一緒に勉強しよう' },
-        { name: 'おもしろ部', description: '笑いたい人集まれ' },
-        { name: 'なんｚ', description: 'なんでも実況' },
-        { name: 'ｖｉｐ', description: 'VIPPERたちのたまり場' }
+function getJapanTime() {
+  const opts = {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  };
+  const ja = new Date().toLocaleString('ja-JP', opts);
+  return ja.replace(/(\d+)\/(\d+)\/(\d+)\s(\d+):(\d+):(\d+)/, '$1-$2-$3 $4:$5:$6');
+}
+
+// --- 起動時：テーブル作成 & 初期データ挿入 ---
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS clubs (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        description TEXT
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS threads (
+        id SERIAL PRIMARY KEY,
+        club_id INTEGER REFERENCES clubs(id),
+        title TEXT,
+        description TEXT,
+        created_at TIMESTAMP,
+        deletePassword TEXT
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS responses (
+        id SERIAL PRIMARY KEY,
+        thread_id INTEGER REFERENCES threads(id),
+        text TEXT,
+        name TEXT,
+        created_at TIMESTAMP,
+        anon_id TEXT,
+        ip_address TEXT
+      )
+    `);
+
+    const { rows } = await pool.query('SELECT COUNT(*) FROM clubs');
+    if (parseInt(rows[0].count, 10) === 0) {
+      const initClubs = [
+        ['ニート部','ニートの集まり'],['暇部','暇人集合'],['愚痴部','日頃の愚痴を吐き出す場所'],
+        ['腐女子部','腐女子による腐女子のための'],['討論部','熱く議論したい人たちへ'],
+        ['恋愛部','恋バナしよ'],['勉強部','一緒に勉強しよう'],['おもしろ部','笑いたい人集まれ'],
+        ['なんｚ','なんでも実況'],['ｖｉｐ','VIPPERたちのたまり場']
       ];
-      const stmt = db.prepare('INSERT INTO clubs (name, description) VALUES (?, ?)');
-      clubs.forEach(club => stmt.run(club.name, club.description));
-      stmt.finalize();
+      for (const [n,d] of initClubs) {
+        await pool.query('INSERT INTO clubs (name,description) VALUES ($1,$2)', [n,d]);
+      }
       console.log('初期部活データを挿入しました');
     }
-  });
-});
+  } catch (err) {
+    console.error('テーブル初期化エラー:', err);
+  }
+})();
+
+// --- ルーティング ---
 
 // トップページ：部活一覧
-app.get('/', (req, res) => {
-  db.all('SELECT * FROM clubs ORDER BY name', [], (err, clubs) => {
-    if (err) return res.status(500).send('データベースエラー');
-    res.render('index', { clubs });
-  });
+app.get('/', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM clubs ORDER BY name');
+    res.render('index', { clubs: rows });
+  } catch {
+    res.status(500).send('データベースエラー');
+  }
 });
 
-// 部活ページ：スレッド一覧（ページネーション＋ソート）
-app.get('/clubs/:club_id', (req, res) => {
-  const club_id = req.params.club_id;
-  const sort = req.query.sort || 'newest';
-  const currentPage = parseInt(req.query.page) || 1;
-  const itemsPerPage = 10;
-  const offset = (currentPage - 1) * itemsPerPage;
+// alias：/clubs → /
+app.get('/clubs', (req, res) => res.redirect('/'));
 
-  db.get('SELECT * FROM clubs WHERE id = ?', [club_id], (err, club) => {
-    if (err || !club) return res.status(404).send('部活が見つかりません');
+// 部活詳細：スレッド一覧（ページネーション＋ソート）
+app.get('/clubs/:club_id', async (req, res) => {
+  const clubId = parseInt(req.params.club_id, 10);
+  const sort    = req.query.sort === 'popular'
+                ? 'response_count DESC'
+                : 'threads.created_at DESC';
+  const page    = parseInt(req.query.page, 10) || 1;
+  const limit   = 10;
+  const offset  = (page - 1) * limit;
 
-    let query = `
-    SELECT 
-      threads.id, 
-      threads.title, 
-      threads.description, 
-      threads.created_at,
-      COUNT(responses.id) AS response_count
-    FROM threads
-    LEFT JOIN responses ON threads.id = responses.thread_id
-    WHERE threads.club_id = ?
-    GROUP BY threads.id
-  `;
-  
-  query += sort === 'popular' ? ' ORDER BY response_count DESC' : ' ORDER BY threads.created_at DESC';
-  query += ' LIMIT ? OFFSET ?';
-  
-  
-    db.all(query, [club_id, itemsPerPage, offset], (err, threads) => {
-      if (err) return res.status(500).send('スレッド取得エラー');
-      db.get('SELECT COUNT(*) AS count FROM threads WHERE club_id = ?', [club_id], (err, countResult) => {
-        if (err) return res.status(500).send('件数取得エラー');
-        const totalPages = Math.ceil(countResult.count / itemsPerPage);
-        res.render('club_detail', { club, threads, sort, currentPage, totalPages });
-      });
+  try {
+    const c = await pool.query('SELECT * FROM clubs WHERE id=$1', [clubId]);
+    if (c.rows.length === 0) return res.status(404).send('部活が見つかりません');
+
+    const q = `
+      SELECT 
+        threads.*, COUNT(responses.id) AS response_count
+      FROM threads
+      LEFT JOIN responses ON threads.id=responses.thread_id
+      WHERE threads.club_id=$1
+      GROUP BY threads.id
+      ORDER BY ${sort}
+      LIMIT $2 OFFSET $3
+    `;
+    const t = await pool.query(q, [clubId, limit, offset]);
+    const cnt = await pool.query('SELECT COUNT(*) FROM threads WHERE club_id=$1', [clubId]);
+    const totalPages = Math.ceil(parseInt(cnt.rows[0].count,10) / limit);
+
+    res.render('club_detail', {
+      club: c.rows[0],
+      threads: t.rows,
+      sort: req.query.sort || 'newest',
+      currentPage: page,
+      totalPages
     });
-  });
+  } catch {
+    res.status(500).send('スレッド取得エラー');
+  }
 });
 
 // スレッド作成ページ
-app.get('/clubs/:club_id/threads/new', (req, res) => {
-  db.get('SELECT * FROM clubs WHERE id = ?', [req.params.club_id], (err, club) => {
-    if (err || !club) return res.status(404).send('部活が見つかりません');
-    res.render('create_thread', { club, error: null }); // error を明示的に渡す
-
-  });
+app.get('/clubs/:club_id/threads/new', async (req, res) => {
+  try {
+    const c = await pool.query('SELECT * FROM clubs WHERE id=$1', [req.params.club_id]);
+    if (c.rows.length === 0) return res.status(404).send('部活が見つかりません');
+    res.render('create_thread', { club: c.rows[0], error: null });
+  } catch {
+    res.status(500).send('サーバーエラー');
+  }
 });
+
+// 投稿前確認画面
 app.post('/confirm-thread', (req, res) => {
   const { title, description, clubId, deletePassword } = req.body;
-  res.render('alert_thread', { title, description, clubId, deletePassword });  
+  res.render('alert_thread', { title, description, clubId, deletePassword });
 });
-
-app.get('/success-thread', (req, res) => {
-  const threadId = req.query.threadId;
-  const clubId = req.query.clubId; // ← 追加
-  res.render('success_thread', { threadId, clubId }); // ← 追加
-});
-
-
-// 部活一覧表示
-app.get('/clubs', (req, res) => {
-  db.all('SELECT * FROM clubs', (err, clubs) => {
-    if (err) return res.status(500).send('部活一覧の取得に失敗しました');
-    res.render('index', { clubs }); // index.ejs を使って部活一覧を表示
-  });
-});
-// 特定の部活に紐づくスレッド一覧表示
-app.get('/clubs/:club_id/threads', (req, res) => {
-  const club_id = req.params.club_id;
-  const sort = req.query.sort || 'newest';
-  const page = parseInt(req.query.page) || 1;
-  const threadsPerPage = 10;
-  const offset = (page - 1) * threadsPerPage;
-
-  db.get('SELECT * FROM clubs WHERE id = ?', [club_id], (err, club) => {
-    if (err || !club) return res.status(404).send('部活が見つかりません');
-
-    // 総スレッド数取得
-    db.get('SELECT COUNT(*) AS count FROM threads WHERE club_id = ?', [club_id], (err, countRow) => {
-      if (err) return res.status(500).send('スレッド数の取得に失敗しました');
-
-      const totalThreads = countRow.count;
-      const totalPages = Math.ceil(totalThreads / threadsPerPage);
-
-      // 並び順を切り替え
-      let orderBy = 'created_at DESC';
-      if (sort === 'popular') orderBy = 'response_count DESC';
-
-      db.all(
-        `SELECT * FROM threads WHERE club_id = ? ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
-        [club_id, threadsPerPage, offset],
-        (err, threads) => {
-          if (err) return res.status(500).send('スレッド一覧の取得に失敗しました');
-
-          res.render('club_detail', {
-            club,
-            threads,
-            currentPage: page,
-            totalPages,
-            sort
-          });
-        }
-      );
-    });
-  });
-});
-
-
 
 // スレッド作成処理
-app.post('/clubs/:club_id/threads', (req, res) => {
-  const club_id = req.params.club_id; // ★ これが必要
+app.post('/clubs/:club_id/threads', async (req, res) => {
+  const clubId = parseInt(req.params.club_id,10);
   const { title, description, deletePassword } = req.body;
-
-  if (!title || !description || !deletePassword) {
+  if (!title||!description||!deletePassword) {
     return res.status(400).send('タイトル・内容・削除用パスワードは必須です');
   }
-
-  const now = new Date();
-  const createdAt = getJapanTime(); // ★ 作成時間も定義する必要があります
-
-  db.run(
-    'INSERT INTO threads (club_id, title, description, created_at, deletePassword) VALUES (?, ?, ?, ?, ?)',
-    [club_id, title, description, createdAt, deletePassword],
-    function (err) {
-      if (err) return res.status(500).send('スレッド作成に失敗しました');
-
-      const threadId = this.lastID;
-      const name = '名無しの学生';
-
-      const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-      const formattedTime = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日（${weekdays[now.getDay()]}） ${now.getHours()}時${now.getMinutes()}分`;
-      function getClientIp(req) {
-        const forwarded = req.headers['x-forwarded-for'];
-        return forwarded ? forwarded.split(',')[0].trim() : req.connection.remoteAddress || req.ip;
-      }
-      
-      const ip = getClientIp(req);
-      const dateStr = new Date().toISOString().split('T')[0];
-      const anonId = generateAnonId(ip, dateStr);
-      db.run(
-        'INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
-        [threadId, description, formattedTime, name, anonId, ip],
-      
-        (err2) => {
-          if (err2) return res.status(500).send('1レス目の作成に失敗しました');
-          res.redirect(`/success-thread?threadId=${threadId}&clubId=${club_id}`);
-        }
-      );
-    }
-  );
+  try {
+    const now = getJapanTime();
+    const ins = await pool.query(
+      `INSERT INTO threads (club_id,title,description,created_at,deletePassword)
+       VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+      [clubId, title, description, now, deletePassword]
+    );
+    const threadId = ins.rows[0].id;
+    const ip = getClientIp(req);
+    const anon = generateAnonId(ip, now.split(' ')[0]);
+    await pool.query(
+      `INSERT INTO responses (thread_id,text,created_at,name,anon_id,ip_address)
+       VALUES ($1,$2,$3,$4,$5,$6)`,
+      [threadId, description, now, '名無しの学生', anon, ip]
+    );
+    res.redirect(`/success-thread?threadId=${threadId}&clubId=${clubId}`);
+  } catch {
+    res.status(500).send('スレッド作成に失敗しました');
+  }
 });
 
-
-app.get('/threads/:id', (req, res) => {
-  db.get('SELECT * FROM threads WHERE id = ?', [req.params.id], (err, thread) => {
-    if (err || !thread) return res.status(404).send('スレッドが見つかりません');
-    
-    
-    db.all(
-        'SELECT * FROM responses WHERE thread_id = ? ORDER BY id ASC',
-      [thread.id],
-       (err, responses) => {
-      if (err) return res.status(500).send('レス取得エラー');
-      
-      // 成功メッセージを渡す
-      const successMessage = req.query.success || null;
-
-      res.render('thread_detail', { thread, responses, success: successMessage });
-    });
+// 作成完了
+app.get('/success-thread', (req, res) => {
+  res.render('success_thread', {
+    threadId: req.query.threadId,
+    clubId: req.query.clubId
   });
 });
 
-
-// 投稿前の確認画面
-app.get('/threads/:id/alert', (req, res) => {
-  res.render('alert', { threadId: req.params.id });
-});
-function generateAnonId(ip, dateStr) {
-  const hash = crypto.createHash('sha256');
-  hash.update(ip + dateStr); // IPアドレスと日付を結合
-  return hash.digest('hex').slice(0, 16); // 最初の16文字を仮IDとして使用
-}
-
-// レス投稿処理
-// クライアントのIPアドレスを取得する関数
-function getClientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  return forwarded ? forwarded.split(',')[0].trim() : req.connection.remoteAddress || req.ip;
-}
-
-app.post('/threads/:id/responses', (req, res) => {
-  const threadId = req.params.id;
-  const content = req.body.content?.trim();
-  const name = req.body.name?.trim() || '名無しの学生';
-
-  const now = new Date();
-  const weekdays = ['日','月','火','水','木','金','土'];
-  const formattedTime = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${weekdays[now.getDay()]}） `
-    + `${now.getHours()}時${now.getMinutes()}分`;
-
-  const ip = getClientIp(req);  // クライアントIPを取得
-  const dateStr = now.toISOString().split('T')[0];  // 今日の日付
-  const anonId = generateAnonId(ip, dateStr);  // 仮IDを生成
-
-  db.run(
-    'INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
-    [threadId, content, formattedTime, name, anonId, ip],
-    (err) => {
-      if (err) return res.status(500).send('レス保存に失敗しました');
-      res.redirect(`/threads/${threadId}/success`);
-    }
-  );
+// スレッド詳細 + レス一覧
+app.get('/threads/:id', async (req, res) => {
+  const id = parseInt(req.params.id,10);
+  try {
+    const t = await pool.query('SELECT * FROM threads WHERE id=$1', [id]);
+    if (t.rows.length === 0) return res.status(404).send('スレッドが見つかりません');
+    const r = await pool.query('SELECT * FROM responses WHERE thread_id=$1 ORDER BY id', [id]);
+    res.render('thread_detail', {
+      thread: t.rows[0],
+      responses: r.rows,
+      success: req.query.success || null
+    });
+  } catch {
+    res.status(500).send('レス取得エラー');
+  }
 });
 
-// 確認画面（フォーム送信 → 投稿前に alert.ejs を表示）
+// 投稿確認画面（alert.ejs を表示）
 app.post('/alert', (req, res) => {
   const { threadId, name, content } = req.body;
 
-  // バリデーション
   if (!content || !threadId) return res.status(400).send('不正な入力です');
 
-  res.render('alert', { threadId, name, content });
-});
-
-// レス投稿後に success.ejs を表示
-app.get('/threads/:id/success', (req, res) => {
-  const threadId = req.params.id;
-
-  db.get('SELECT * FROM threads WHERE id = ?', [threadId], (err, thread) => {
-    if (err || !thread) return res.status(404).send('スレッドが見つかりません');
-    res.render('success', { threadId });
+  res.render('alert', {
+    threadId,
+    name: name?.trim() || '名無しの学生',
+    content: content.trim()
   });
 });
 
-app.post('/threads/:id/delete', (req, res) => {
-  const threadId = req.params.id;
-  const inputPassword = req.body.deletePassword; // フォームのinput nameに合わせる
+// レス投稿（確認画面の「✅ 投稿する」ボタンから実行）
+app.post('/threads/:id/responses', async (req, res) => {
+  const tid = parseInt(req.params.id, 10);
+  const name = req.body.name?.trim() || '名無しの学生';
+  const content = req.body.content?.trim();
+  if (!content) return res.status(400).send('内容は必須です');
 
-  db.get('SELECT deletePassword, club_id FROM threads WHERE id = ?', [threadId], (err, row) => {
-    if (err || !row) {
-      return res.status(404).send('スレッドが見つかりません');
-    }
+  try {
+    const now = getJapanTime();
+    const ip = getClientIp(req);
+    const anon = generateAnonId(ip, now.split(' ')[0]);
 
-    if (row.deletePassword !== inputPassword) {
+    await pool.query(
+      `INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [tid, content, now, name, anon, ip]
+    );
+
+    res.redirect(`/threads/${tid}/success`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('レス保存に失敗しました');
+  }
+});
+
+// レス投稿完了画面
+app.get('/threads/:id/success', (req, res) => {
+  res.render('success', { threadId: req.params.id });
+});
+
+// スレッド削除
+app.post('/threads/:id/delete', async (req, res) => {
+  const id = parseInt(req.params.id,10);
+  const pw = req.body.deletePassword;
+  try {
+    const pr = await pool.query(
+      'SELECT deletePassword, club_id FROM threads WHERE id=$1', [id]
+    );
+    if (!pr.rows.length || pr.rows[0].deletepassword !== pw) {
       return res.status(403).send('削除用パスワードが違います');
     }
-
-    // 関連レス削除
-    db.run('DELETE FROM responses WHERE thread_id = ?', [threadId], (err1) => {
-      if (err1) {
-        return res.status(500).send('レス削除に失敗しました');
-      }
-
-      // スレッド削除
-      db.run('DELETE FROM threads WHERE id = ?', [threadId], (err2) => {
-        if (err2) {
-          return res.status(500).send('スレッド削除に失敗しました');
-        }
-
-        // 完了画面を表示（テンプレート）
-        res.render('delete_success', {
-          message: 'スレッドが正常に削除されました。',
-          clubId: row.club_id
-        });
-      });
+    await pool.query('DELETE FROM responses WHERE thread_id=$1', [id]);
+    await pool.query('DELETE FROM threads   WHERE id=$1', [id]);
+    res.render('delete_success', {
+      message: 'スレッドが正常に削除されました。',
+      clubId: pr.rows[0].club_id
     });
-  });
+  } catch {
+    res.status(500).send('削除に失敗しました');
+  }
 });
 
-
-// 日本時間取得関数
-function getJapanTime() {
-  const options = {
-    timeZone: 'Asia/Tokyo',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  };
-  const japanTime = new Date().toLocaleString('ja-JP', options);
-  return japanTime.replace(/(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+)/, '$3-$1-$2 $4:$5:$6');
-}
-
-
-// サーバー起動
+// サーバ起動
 app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
+  console.log('アプリケーションがポート3000で起動しました');
 });
-
-

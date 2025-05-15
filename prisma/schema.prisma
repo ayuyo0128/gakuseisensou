@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Club {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  threads     Thread[]
+}
+
+model Thread {
+  id             Int        @id @default(autoincrement())
+  club_id        Int
+  title          String
+  description    String
+  created_at     DateTime   @default(now())
+  deletePassword String
+
+  club     Club     @relation(fields: [club_id], references: [id])
+  responses Response[]
+}
+
+model Response {
+  id         Int      @id @default(autoincrement())
+  thread_id  Int
+  text       String
+  name       String
+  created_at DateTime @default(now())
+  anon_id    String
+  ip_address String
+
+  thread Thread @relation(fields: [thread_id], references: [id])
+}
