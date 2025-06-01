@@ -1,10 +1,12 @@
-// app.js
-const express = require('express');
-const pool = require('./database');      // PostgreSQL プール
+
+const express = require('express');      
 const bodyParser = require('body-parser');
 const path = require('path');
 const crypto = require('crypto');
 const app = express();
+const pool = require('./db'); // db.js のファイル名に合わせてパスを調整
+
+
 
 app.set('trust proxy', true);
 app.use(express.urlencoded({ extended: true }));
@@ -23,7 +25,7 @@ function getClientIp(req) {
 function generateAnonId(ip, dateStr) {
   const hash = crypto.createHash('sha256');
   hash.update(ip + dateStr);
-  return hash.digest('hex').slice(0, 8);
+  return hash.digest('hex').slice(0, 6);
 }
 
 function getJapanTime() {
@@ -65,7 +67,8 @@ function getJapanTime() {
         name TEXT,
         created_at TIMESTAMP,
         anon_id TEXT,
-        ip_address TEXT
+        ip_address TEXT,
+        delete_password TEXT
       )
     `);
 
@@ -177,10 +180,11 @@ app.post('/clubs/:club_id/threads', async (req, res) => {
     const ip = getClientIp(req);
     const anon = generateAnonId(ip, now.split(' ')[0]);
     await pool.query(
-      `INSERT INTO responses (thread_id,text,created_at,name,anon_id,ip_address)
-       VALUES ($1,$2,$3,$4,$5,$6)`,
-      [threadId, description, now, '名無しの学生', anon, ip]
+      `INSERT INTO responses (thread_id,text,created_at,name,anon_id,ip_address,delete_password)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [threadId, description, now, '名無しの学生', anon, ip, deletePassword]
     );
+    
     res.redirect(`/success-thread?threadId=${threadId}&clubId=${clubId}`);
   } catch {
     res.status(500).send('スレッド作成に失敗しました');
@@ -214,23 +218,28 @@ app.get('/threads/:id', async (req, res) => {
 
 // 投稿確認画面（alert.ejs を表示）
 app.post('/alert', (req, res) => {
-  const { threadId, name, content } = req.body;
+  const { threadId, name, content, delete_password } = req.body;
 
-  if (!content || !threadId) return res.status(400).send('不正な入力です');
+  if (!content || !threadId || !delete_password) {
+    return res.status(400).send('不正な入力です');
+  }
 
   res.render('alert', {
     threadId,
     name: name?.trim() || '名無しの学生',
-    content: content.trim()
+    content: content.trim(),
+    delete_password: delete_password.trim()
   });
 });
+
 
 // レス投稿（確認画面の「✅ 投稿する」ボタンから実行）
 app.post('/threads/:id/responses', async (req, res) => {
   const tid = parseInt(req.params.id, 10);
   const name = req.body.name?.trim() || '名無しの学生';
   const content = req.body.content?.trim();
-  if (!content) return res.status(400).send('内容は必須です');
+  const delete_password = req.body.delete_password?.trim(); // 👈 追加
+  if (!content || !delete_password) return res.status(400).send('内容と削除用パスワードは必須です');
 
   try {
     const now = getJapanTime();
@@ -238,9 +247,9 @@ app.post('/threads/:id/responses', async (req, res) => {
     const anon = generateAnonId(ip, now.split(' ')[0]);
 
     await pool.query(
-      `INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [tid, content, now, name, anon, ip]
+      `INSERT INTO responses (thread_id, text, created_at, name, anon_id, ip_address, delete_password)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [tid, content, now, name, anon, ip, delete_password]
     );
 
     res.redirect(`/threads/${tid}/success`);
@@ -250,9 +259,40 @@ app.post('/threads/:id/responses', async (req, res) => {
   }
 });
 
+
 // レス投稿完了画面
 app.get('/threads/:id/success', (req, res) => {
   res.render('success', { threadId: req.params.id });
+});
+
+// レス削除処理
+app.post('/responses/:id/delete', async (req, res) => {
+  const responseId = parseInt(req.params.id, 10);
+  const inputPassword = req.body.delete_password;
+
+  try {
+    // データベースから対象レスを取得（delete_password が保存されている前提）
+    const { rows } = await pool.query('SELECT * FROM responses WHERE id=$1', [responseId]);
+    if (rows.length === 0) return res.status(404).send('レスが見つかりません');
+
+    const response = rows[0];
+    if (!response.delete_password) {
+      return res.status(400).send('このレスは削除できません（パスワード未設定）');
+    }
+
+    // パスワード照合
+    if (inputPassword !== response.delete_password) {
+      return res.status(403).send('パスワードが違います');
+    }
+
+    // 削除処理
+    await pool.query('DELETE FROM responses WHERE id=$1', [responseId]);
+
+    res.redirect('back');
+  } catch (err) {
+    console.error('レス削除エラー:', err);
+    res.status(500).send('サーバーエラー');
+  }
 });
 
 // スレッド削除
@@ -263,7 +303,7 @@ app.post('/threads/:id/delete', async (req, res) => {
     const pr = await pool.query(
       'SELECT deletePassword, club_id FROM threads WHERE id=$1', [id]
     );
-    if (!pr.rows.length || pr.rows[0].deletepassword !== pw) {
+    if (!pr.rows.length || pr.rows[0].deletePassword !== pw) {
       return res.status(403).send('削除用パスワードが違います');
     }
     await pool.query('DELETE FROM responses WHERE thread_id=$1', [id]);

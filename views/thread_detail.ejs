@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -74,6 +75,26 @@
       position: relative;
       font-size: 1rem;
     }
+    .delete-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.delete-form {
+  display: none;
+  margin-top: 5px;
+  margin-left: 30px;
+}
+.delete-form input {
+  padding: 4px;
+  margin-right: 4px;
+}
+
     .response-number {
       color: blue;
       font-weight: bold;
@@ -91,14 +112,14 @@
     .response-meta {
   margin-left: 40px;
   color: #666; /* グレー（薄い黒） */
-  font-size: 0.5rem;
+  font-size: 0.8rem;
 }
 
     .response-text {
-      margin-left: 40px;
+      margin-left: 30px;
       margin-top: 5px;
       line-height: 1.5;
-      font-size: 0.1rem;
+      font-size: 1rem;
     }
 
     .form-area {
@@ -168,7 +189,7 @@
   }
 
   .response-text {
-    margin-left: 25px;
+    margin-left: 30px;
     font-size: 0.9rem;
   }
 
@@ -195,7 +216,7 @@
       <div class="thread-title-area">
         <div class="thread-title"><%= thread.title %></div>
         <form class="thread-delete-form" action="/threads/<%= thread.id %>/delete" method="POST" onsubmit="return confirm('本当に削除しますか？')">
-          <input type="password" name="deletePassword" placeholder="削除用パスワード" required>
+          <input type="password" name="delete_password" placeholder="削除用パスワード" required>
           <button type="submit">削除</button>
         </form>
       </div>
@@ -205,17 +226,29 @@
           <div class="response-number" onclick="insertReply(<%= index + 1 %>)">
             <%= index + 1 %>
           </div>
-      
+        
+          <!-- ゴミ箱アイコン -->
+          <button class="delete-toggle" onclick="toggleDeleteForm(<%= response.id %>)">🗑️</button>
+        
           <div class="response-header">
             <span class="response-name"><%= response.name || '名無しの学生' %></span>
             <span class="response-id">[ID:<%= response.anon_id %>]</span>
             <span class="response-time">[<%= response.created_at %>]</span>
           </div>
-      
+        
           <div class="response-text">
             <%- (response.text || '').replace(/\n/g, "<br>") %>
           </div>
+        
+          <!-- 削除フォーム（初期は非表示） -->
+          <form method="POST" action="/responses/<%= response.id %>/delete"
+                id="delete-form-<%= response.id %>" class="delete-form"
+                onsubmit="return confirm('このレスを本当に削除しますか？')">
+            <input type="password" name="delete_password" placeholder="削除パス" required>
+            <button type="submit">削除</button>
+          </form>
         </div>
+        
       <% }); %>
       
       <div class="form-area">
@@ -223,6 +256,8 @@
           <input type="hidden" name="threadId" value="<%= thread.id %>">
           <input type="text" name="name" placeholder="名前（任意）">
           <textarea name="content" id="replyBox" rows="4" placeholder="コメントを入力してください" required></textarea>
+          <!-- 削除用パスワード入力欄を追加 -->
+          <input type="password" name="delete_password" placeholder="削除用パスワード" required>
           <button type="submit">書き込む（確認）</button>
         </form>
       </div>
@@ -242,6 +277,12 @@
       }
       return true;
     }
+    function toggleDeleteForm(id) {
+    const form = document.getElementById(`delete-form-${id}`);
+     if (!form) return console.warn(`フォーム not found: delete-form-${id}`);
+     form.style.display = form.style.display === 'block' ? 'none' : 'block';
+   }
+ 
   </script>
 </body>
 </html>

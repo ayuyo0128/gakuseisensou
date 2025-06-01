@@ -10,10 +10,22 @@ body {
 header {
   text-align: center;
   padding: 20px;
-  background-color: #4CAF50; /* 緑色を背景にして学校感を演出 */
+  background-color: #4CAF50; /* 緑色で学校感 */
   color: white;
-  font-size: 2rem;
+}
+
+/* タイトル（学生戦争） */
+.club-title {
+  font-size: 2.8rem; /* ← タイトルだけ大きく */
   font-weight: bold;
+  margin: 0;
+}
+
+/* サブタイトル（学生掲示板）など */
+.subtitle {
+  font-size: 1.2rem; /* ← 小さめで控えめに */
+  font-weight: normal;
+  margin-top: 5px;
 }
 
 h1 {
