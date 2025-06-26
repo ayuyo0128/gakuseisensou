@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ようこそ掲示板へ</title>
+  <style>
+    :root {
+      --main-color: #0066ff;
+      --danger-color: red;
+      --text-color: #333;
+      --bg-color: #f9f9f9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+    }
+
+    header {
+      background-color: var(--main-color);
+      color: white;
+      padding: 1.5rem 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 2rem 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+    }
+
+    .warning {
+      color: var(--danger-color);
+      font-weight: bold;
+      margin-top: 2rem;
+      font-size: 1.1rem;
+    }
+
+    a.button {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.75rem 2rem;
+      background-color: var(--main-color);
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      transition: background-color 0.3s;
+    }
+
+    a.button:hover {
+      background-color: #005ea6;
+    }
+
+    /* スマホ向け調整 */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      p, .warning, a.button {
+        font-size: 1rem;
+      }
+
+      a.button {
+        padding: 0.6rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>学生戦争へようこそ</h1>
+  </header>
+  <main>
+    <p>何でも自由に気軽に話してください</p>
+    <p>荒らしはやめてね～</p>
+
+    <div class="warning">
+      ※ 削除パスワードは統一してください。忘れると削除できません！
+    </div>
+
+    <a href="/clubs" class="button">部活一覧へ</a>
+  </main>
+</body>
+</html>

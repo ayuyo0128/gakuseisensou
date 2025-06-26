@@ -1,189 +1,59 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎆 完璧！スレッド作成完了 🎆</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
   <style>
     body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: radial-gradient(ellipse at center, #1f1f2e 0%, #0c0c1a 100%);
+      margin: 0; padding: 0; height: 100%;
+      background: #0c0c1a;
       font-family: 'Montserrat', sans-serif;
-      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
     }
-.animated-bg::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: repeating-radial-gradient(circle, rgba(0,255,255,0.06) 1px, transparent 2px);
-  animation: rotateBg 30s linear infinite;
-  z-index: 0;
-  pointer-events: none;
-}
-
-@keyframes rotateBg {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.card {
-  position: relative;
-  z-index: 1;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-radius: 20px;
-  box-shadow: 0 0 40px rgba(0,255,255,0.2);
-}
-
-#particles-js {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  background-color: #0d0d0d;
-}
-
-.card {
-  position: relative;
-  z-index: 1;
-}
-
-.headline h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #00ffe7, #0077ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
-  animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-  0% { text-shadow: 0 0 10px #00ffff; }
-  100% { text-shadow: 0 0 20px #00ffff, 0 0 30px #0077ff; }
-}
-
+    .card {
+      background: rgba(255,255,255,0.9);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      color: #222;
+    }
+    h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #0077ff;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+    }
+    a.btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #0077ff;
+      color: #fff;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+    a.btn:hover {
+      background: #005fcc;
+    }
   </style>
-  <!-- 追加するCSS（<head>内の既存スタイルの下に追記） -->
-<style>
-  /* スマホ向けカードレイアウト */
-  .wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 12px;
-    min-height: 100vh;
-    z-index: 1;
-  }
-  .wrapper .card {
-    background: rgba(255,255,255,0.9);
-    border-radius: 16px;
-    padding: 20px;
-    width: 100%;
-    max-width: 360px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    text-align: center;
-  }
-  .wrapper .headline h1 {
-    font-size: 1.8rem;
-    line-height: 1.2;
-    background: linear-gradient(90deg, #00ffe7, #0077ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 8px rgba(0,255,255,0.6);
-    margin-bottom: 0.8em;
-    animation: glowTitle 2s ease-in-out infinite alternate;
-  }
-  @keyframes glowTitle {
-    from { text-shadow: 0 0 8px #00ffff; }
-    to   { text-shadow: 0 0 16px #00ffff, 0 0 24px #0077ff; }
-  }
-  .wrapper p {
-    font-size: 1rem;
-    color: #444;
-    margin: 0.8em 0;
-  }
-  .wrapper .btn {
-    display: block;
-    margin: 0 auto;
-    padding: 12px 0;
-    background: #0077ff;
-    color: #fff;
-    border-radius: 30px;
-    text-decoration: none;
-    font-size: 1rem;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    transition: background 0.2s, transform 0.2s;
-  }
-  .wrapper .btn:hover {
-    background: #005fcc;
-    transform: translateY(-2px);
-  }
-</style>
 </head>
-
-<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
-
-<body class="animated-bg">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <div id="bg"></div>
-  <div id="particles-js"></div>
-
-  <script>
-    particlesJS("particles-js", {
-      "particles": {
-        "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-        "color": { "value": ["#0ff", "#0f0", "#f0f", "#f00"] },
-        "shape": { "type": "circle" },
-        "opacity": { "value": 0.7 },
-        "size": { "value": 4, "random": true },
-        "line_linked": {
-          "enable": true,
-          "distance": 120,
-          "color": "#00ffff",
-          "opacity": 0.4,
-          "width": 1
-        },
-        "move": {
-          "enable": true,
-          "speed": 8,
-          "direction": "none",
-          "random": false,
-          "straight": false,
-          "bounce": false
-        }
-      },
-      "interactivity": {
-        "events": {
-          "onhover": { "enable": true, "mode": "grab" },
-          "onclick": { "enable": true, "mode": "push" }
-        },
-        "modes": {
-          "grab": { "distance": 150, "line_linked": { "opacity": 1 } },
-          "push": { "particles_nb": 4 }
-        }
-      },
-      "retina_detect": true
-    });
-  </script>
-
-  <div class="wrapper">
-    <div class="card">
-      <div class="headline">
-        <h1>スレッドを<br>作成しました</h1>
-      </div>
-      <p>🎉 あなたスレッドが投稿されました！</p>
-      <a class="btn" href="/threads/<%= threadId %>">作成したスレッドを見る →</a>
-    </div>
+<body>
+  <div class="card">
+    <h1>スレッドを<br>作成しました</h1>
+    <p>🎉 あなたのスレッドが投稿されました！</p>
+    <a class="btn" href="/threads/<%= threadId %>">作成したスレッドを見る →</a>
   </div>
-
 </body>
 </html>

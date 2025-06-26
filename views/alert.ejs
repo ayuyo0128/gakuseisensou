@@ -85,6 +85,11 @@
     <p><strong>名前:</strong> <%= name || '名無しの学生' %></p>
     <p><strong>コメント:</strong></p>
     <p><%= content %></p>
+    <% if (image_filename) { %>
+      <p>添付画像：</p>
+      <img src="/uploads/<%=image_filename %>" alt="添付画像" style="max-width: 300px;">
+    <% } %>
+    
 
     <div class="warning">
       <h3>⚠️【法的リスクに関する最終警告】⚠️</h3>
@@ -118,16 +123,22 @@
       </p>
     </div>
 
-    <form action="/threads/<%= threadId %>/responses" method="POST">
-      <input type="hidden" name="name" value="<%= name %>">
-      <input type="hidden" name="content" value="<%= content %>">
-      <input type="hidden" name="delete_password" value="<%= delete_password %>">
-      <button type="submit" class="btn submit-btn">✅ 投稿する</button>
-    </form>
+    <form action="/threads/<%= threadId %>/responses"
+      method="POST"
+      enctype="multipart/form-data">
+  <input type="hidden" name="name"           value="<%= name %>">
+  <input type="hidden" name="content"        value="<%= content %>">
+  <input type="hidden" name="image_filename" value="<%= image_filename %>">
+  <input type="hidden" name="delete_password" value="<%= delete_password %>">
+  <button type="submit" class="btn submit-btn">
+    ✅ 投稿する
+  </button>
+</form>
 
-    <form action="/threads/<%= threadId %>" method="GET">
-      <button type="submit" class="btn back-btn">← 戻る</button>
-    </form>
+<form action="/threads/<%= threadId %>" method="GET">
+  <button type="submit" class="btn back-btn">← 戻る</button>
+</form>
+
   </div>
 </body>
 </html>

@@ -1,102 +1,117 @@
-body {
-  font-family: 'Arial', sans-serif; /* より親しみやすいフォント */
-  background-color: #f4f4f9; /* 明るく優しい背景色 */
-  color: #333; /* 文字色を落ち着いたグレーに */
+/* === 全体共通スタイル === */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* === ヘッダー === */
 header {
   text-align: center;
   padding: 20px;
-  background-color: #4CAF50; /* 緑色で学校感 */
+  background-color: #0066ff;
   color: white;
 }
 
-/* タイトル（学生戦争） */
-.club-title {
-  font-size: 2.8rem; /* ← タイトルだけ大きく */
+header a {
+  color: #1976d2;
+  text-decoration: none;
   font-weight: bold;
-  margin: 0;
 }
 
-/* サブタイトル（学生掲示板）など */
+header a:hover {
+  color: #125ea6;
+  text-decoration: underline;
+}
+
+/* タイトル */
+.club-title {
+  font-size: 2.8rem;
+  font-weight: bold;
+}
+
+/* サブタイトル */
 .subtitle {
-  font-size: 1.2rem; /* ← 小さめで控えめに */
-  font-weight: normal;
+  font-size: 1.2rem;
   margin-top: 5px;
+  font-weight: normal;
 }
 
-h1 {
-  margin: 0;
-}
-
+/* === 部活リスト === */
 .club-list {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  gap: 15px; /* 部活間の距離を少し広げる */
+  gap: 15px;
 }
 
+/* 全体をクリック可能にするリンク */
+.club-item-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  width: 90%;
+  max-width: 500px;
+}
+
+/* 部活アイテム（カード風） */
 .club-item {
   background: white;
-  border: 2px solid #4CAF50; /* 部活項目を区切るための緑のボーダー */
+  border: 2px solid #0066ff;
   border-radius: 8px;
-  padding: 10px;
-  width: 90%; /* 余白を取ってスッキリとした印象に */
-  max-width: 500px;
+  padding: 15px;
+  width: 100%;
   text-align: center;
-  transition: transform 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 軽い影をつけて、カードのように浮き立たせる */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .club-item:hover {
-  transform: translateY(-5px); /* 部活をクリックしやすくするための浮き上がり効果 */
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* 部活名 */
 .club-item a {
-  font-size: 1.3rem; /* 部活名を大きくして、目立たせる */
+  font-size: 1.3rem;
   color: #333;
   text-decoration: none;
   font-weight: bold;
 }
 
 .club-item a:hover {
-  color: #4CAF50; /* ホバー時にリンクの色を変えて視覚的な反応を加える */
+  color: #0066ff;
 }
 
+/* 部活の説明 */
 .club-description {
   font-size: 1rem;
-  color: #777; /* 説明文は少し薄い色で目立たせすぎないように */
+  color: #777;
   margin-top: 5px;
 }
 
+/* === ボタン === */
 button {
-  background-color: #4CAF50;
+  background-color: #0066ff;
   color: white;
   font-size: 1rem;
+  font-weight: bold;
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   margin-top: 20px;
-  font-weight: bold;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
 }
 
 button:hover {
-  background-color: #388E3C; /* ボタンのホバー時の色変更 */
-}
-/* styles.css */
-header a {
-  color: #1976d2;  /* リンクの色 */
-  text-decoration: none;  /* 下線を消す */
-  font-weight: bold;  /* 太文字 */
-}
-
-header a:hover {
-  color: #125ea6;  /* ホバー時の色 */
-  text-decoration: underline;  /* ホバー時に下線を追加 */
+  background-color: #0066ff ;
 }
