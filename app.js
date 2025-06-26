@@ -1,23 +1,17 @@
-// app.js の先頭あたりに 1 行追加
 require('dotenv').config();
-
-const { Pool } = require('pg');
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }   // ← Render の PG はこれを付けると安定
-});
-
 require('dns').setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const crypto = require('crypto');
 const sharp = require('sharp');
 const fs = require('fs');
-const app = express();
-const pool = require('./db'); // db.js のファイル名に合わせてパスを調整
 const multer = require('multer');
+
+const pool = require('./db'); // ← db.js に統一
+
+const app = express();
 
 // ─── Multer 設定 ───
 const storage = multer.diskStorage({
