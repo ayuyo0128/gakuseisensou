@@ -114,6 +114,7 @@ async function optimizeImage(originalPath, filename) {
         ['腐女子部','腐女子による腐女子のための'],['討論部','熱く議論したい人たちへ'],
         ['恋愛部','恋バナしよ'],['勉強部','一緒に勉強しよう'],['おもしろ部','笑いたい人集まれ'],
         ['なんｚ','なんでも実況'],['ｖｉｐ','VIPPERたちのたまり場'],['自慢部'],['ヲたく部'],['オフ会部'],['授業なう部']
+        ['美容部'],['趣味部'],['有益部'],['自己啓発部'],['流行部']
       ];
       for (const [n,d] of initClubs) {
         await pool.query('INSERT INTO clubs (name,description) VALUES ($1,$2)', [n,d]);
