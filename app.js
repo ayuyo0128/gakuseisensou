@@ -31,6 +31,14 @@ const upload = multer({
     cb(ok ? null : new Error('画像ファイルのみアップロードできます（動画は不可）'), ok);
   }
 });
+(async () => {
+  try {
+    await pool.query(`ALTER TABLE responses ADD COLUMN IF NOT EXISTS image_filename TEXT`);
+    console.log('image_filename カラムを確認・追加しました');
+  } catch (err) {
+    console.error('image_filename カラム追加時にエラー:', err.message);
+  }
+})();
 
 app.set('trust proxy', true);
 app.use(express.urlencoded({ extended: true }));
