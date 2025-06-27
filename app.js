@@ -56,9 +56,7 @@ function generateAnonId(ip, dateStr) {
   hash.update(ip + dateStr);
   return hash.digest('hex').slice(0, 6);
 }
-function getJapanTime() {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-}
+
 // 画像最適化ヘルパー
 async function optimizeImage(originalPath, filename) {
   const compressedName = `compressed-${path.parse(filename).name}.webp`; // WebPに変換
