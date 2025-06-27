@@ -56,6 +56,9 @@ function generateAnonId(ip, dateStr) {
   hash.update(ip + dateStr);
   return hash.digest('hex').slice(0, 6);
 }
+function getJapanTime() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+}
 
 // 画像最適化ヘルパー
 async function optimizeImage(originalPath, filename) {
@@ -108,12 +111,27 @@ async function optimizeImage(originalPath, filename) {
     const { rows } = await pool.query('SELECT COUNT(*) FROM clubs');
     if (parseInt(rows[0].count, 10) === 0) {
       const initClubs = [
-        ['ニート部','ニートの集まり'],['暇部','暇人集合'],['愚痴部','日頃の愚痴を吐き出す場所'],
-        ['腐女子部','腐女子による腐女子のための'],['討論部','熱く議論したい人たちへ'],
-        ['恋愛部','恋バナしよ'],['勉強部','一緒に勉強しよう'],['おもしろ部','笑いたい人集まれ'],
-        ['なんｚ','なんでも実況'],['ｖｉｐ','VIPPERたちのたまり場'],['自慢部'],['ヲたく部'],['オフ会部'],['授業なう部']
-        ['美容部'],['趣味部'],['有益部'],['自己啓発部'],['流行部']
+        ['ニート部','ニートの集まり'],
+        ['暇部','暇人集合'],
+        ['愚痴部','日頃の愚痴を吐き出す場所'],
+        ['腐女子部','腐女子による腐女子のための'],
+        ['討論部','熱く議論したい人たちへ'],
+        ['恋愛部','恋バナしよ'],
+        ['勉強部','一緒に勉強しよう'],
+        ['おもしろ部','笑いたい人集まれ'],
+        ['なんｚ','なんでも実況'],
+        ['ｖｉｐ','VIPPERたちのたまり場'],
+        ['自慢部','自慢話を共有する部活です'],  // ← 空じゃなく説明文を入れる
+        ['ヲたく部','オタクのための集まり'],
+        ['オフ会部','オフ会情報を共有しよう'],
+        ['授業なう部','授業のことを話す部活'],
+        ['美容部','美容に関する話題'],
+        ['趣味部','趣味を語り合う'],
+        ['有益部','有益な情報を共有'],
+        ['自己啓発部','自己啓発に励む'],
+        ['流行部','最新の流行を追う']
       ];
+      
       for (const [n,d] of initClubs) {
         await pool.query('INSERT INTO clubs (name,description) VALUES ($1,$2)', [n,d]);
       }
