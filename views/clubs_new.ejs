@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>部活追加</title>
+</head>
+<body>
+  <h1>新しい部活を追加</h1>
+  <form action="/clubs/new" method="POST">
+    <label>部活名: <input type="text" name="name" required></label><br>
+    <label>説明: <textarea name="description" required></textarea></label><br>
+    <button type="submit">追加</button>
+  </form>
+  <a href="/clubs">戻る</a>
+</body>
+</html>

@@ -120,16 +120,7 @@ async function optimizeImage(originalPath, filename) {
         ['勉強部','一緒に勉強しよう'],
         ['おもしろ部','笑いたい人集まれ'],
         ['なんｚ','なんでも実況'],
-        ['ｖｉｐ','VIPPERたちのたまり場'],
-        ['自慢部','自慢話を共有する部活です'],  // ← 空じゃなく説明文を入れる
-        ['ヲたく部','オタクのための集まり'],
-        ['オフ会部','オフ会情報を共有しよう'],
-        ['授業なう部','授業のことを話す部活'],
-        ['美容部','美容に関する話題'],
-        ['趣味部','趣味を語り合う'],
-        ['有益部','有益な情報を共有'],
-        ['自己啓発部','自己啓発に励む'],
-        ['流行部','最新の流行を追う']
+        ['ｖｉｐ','VIPPERたちのたまり場']
       ];
       
       for (const [n,d] of initClubs) {
@@ -141,6 +132,29 @@ async function optimizeImage(originalPath, filename) {
     console.error('テーブル初期化エラー:', err);
   }
 })();
+// 部活追加フォーム表示（GET）
+app.get('/clubs/new', (req, res) => {
+  res.render('clubs_new');  // clubs_new.ejsを用意してください
+});
+
+// 部活追加処理（POST）
+app.post('/clubs/new', async (req, res) => {
+  const { name, description } = req.body;
+  if (!name || !description) {
+    return res.status(400).send('部活名と説明は必須です');
+  }
+
+  try {
+    await pool.query(
+      'INSERT INTO clubs (name, description) VALUES ($1, $2)',
+      [name, description]
+    );
+    res.redirect('/clubs');  // 追加後に部活一覧へリダイレクト
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('部活の追加に失敗しました');
+  }
+});
 
 // --- ルーティング ---
 app.get('/', (req, res) => res.render('welcome'));
