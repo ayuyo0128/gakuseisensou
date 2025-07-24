@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>検索結果: <%= query %></title>
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 20px;
+      line-height: 1.6;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      color: #0055cc;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      background: #fff;
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s ease;
+    }
+    li:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    a {
+      color: #0077ee;
+      text-decoration: none;
+      font-weight: 600;
+      word-break: break-word;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    small {
+      color: #666;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 8px 14px;
+      background-color: #0055cc;
+      color: #fff;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .back-link:hover {
+      background-color: #003d99;
+    }
+    p.no-results {
+      font-style: italic;
+      color: #999;
+    }
+
+    /* --- モバイル対応 --- */
+    @media (max-width: 600px) {
+      body {
+        margin: 10px;
+        font-size: 14px;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      li {
+        padding: 10px 12px;
+      }
+      .back-link {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 12px 0;
+        font-size: 1rem;
+        border-radius: 0;
+        margin-top: 20px;
+      }
+      a {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>検索結果: "<%= query %>"</h1>
+
+  <% if (threads.length) { %>
+    <ul>
+      <% threads.forEach(thread => { %>
+        <li>
+          <a href="/threads/<%= thread.id %>"><%= thread.title %></a>
+          (<%= thread.club_name %>)
+          <br>
+          <small>投稿日: <%= new Date(thread.created_at).toLocaleString('ja-JP', {timeZone:'Asia/Tokyo'}) %></small>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p class="no-results">該当するスレッドはありませんでした。</p>
+  <% } %>
+
+  <% if (clubId) { %>
+    <a class="back-link" href="/clubs/<%= clubId %>">← スレッド一覧に戻る</a>
+  <% } else { %>
+    <p>スレッド一覧に戻る対象の部活が特定できません。</p>
+  <% } %>
+</body>
+</html>

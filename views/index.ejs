@@ -1,29 +1,118 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>＃異場所</title>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css"> <!-- 先ほど作成したCSSを読み込む -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>＃異場所</title>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    /* === 全体共通スタイル === */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* === ヘッダー === */
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: #0066ff;
+      color: white;
+    }
+
+    header a {
+      color: #0066ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    header a:hover {
+      color: #0066ff;
+      text-decoration: underline;
+    }
+
+    /* タイトル */
+    .club-title {
+      font-size: 2.8rem;
+      font-weight: bold;
+    }
+
+    /* サブタイトル */
+    p {
+      font-size: 1.2rem;
+      margin-top: 5px;
+      font-weight: normal;
+    }
+
+    /* === 部活リスト === */
+    .club-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 15px;
+    }
+
+    /* 全体をクリック可能にするリンク */
+    .club-item-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    /* 部活アイテム（カード風） */
+    .club-item {
+      background: white;
+      border: 2px solid #0066ff;
+      border-radius: 8px;
+      padding: 15px;
+      width: 100%;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .club-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* 部活名 */
+    .club-name {
+      font-size: 1.3rem;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .club-item a:hover .club-name {
+      color: #0066ff;
+    }
+
+  </style>
 </head>
 <body>
-    <header>
-        <h1 class="club-title">＃異場所</h1>
-        <p>学生のための掲示板</p>
-        <!-- home.ejs -->      
-    </header>
-    <div class="club-list">
-        <% clubs.forEach(function(club) { %> 
-            <a href="/clubs/<%= club.id %>" class="club-item-link">
-                <div class="club-item">
-                    <div class="club-name"><%= club.name %></div>
-                </div>
-            </a>
-        <% }); %>
-      </div>
-      
+  <header>
+    <h1 class="club-title">＃異場所</h1>
+    <p>学生のための掲示板</p>
+  </header>
+  <div class="club-list">
+    <% clubs.forEach(function(club) { %> 
+      <a href="/clubs/<%= club.id %>" class="club-item-link">
+        <div class="club-item">
+          <div class="club-name"><%= club.name %></div>
+        </div>
+      </a>
+    <% }); %>
+  </div>
 </body>
 </html>

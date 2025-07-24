@@ -2,58 +2,111 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🎆 完璧！スレッド作成完了 🎆</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎉 スレッド作成完了</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      background: #0c0c1a;
-      font-family: 'Montserrat', sans-serif;
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(to bottom, #f0fff0, #d0f5d0);
+      margin: 0;
+      padding: 0;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      color: #fff;
+      justify-content: center;
+      height: 100vh;
     }
-    .card {
-      background: rgba(255,255,255,0.9);
-      border-radius: 16px;
-      padding: 20px;
-      max-width: 360px;
+
+    .success-box {
+      background-color: #ffffff;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       text-align: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-      color: #222;
+      animation: fadeIn 1s ease-in-out;
+      width: 90%;
+      max-width: 400px;
+      box-sizing: border-box;
     }
-    h1 {
-      font-weight: 700;
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      color: #0077ff;
+
+    .success-box h1 {
+      font-size: 24px;
+      color: #2e8b57;
+      margin-bottom: 10px;
     }
-    p {
-      font-size: 1rem;
-      margin-bottom: 1.2rem;
+
+    .success-box p {
+      font-size: 16px;
+      color: #444;
+      margin-bottom: 25px;
     }
-    a.btn {
+
+    .return-link {
       display: inline-block;
       padding: 12px 24px;
-      background: #0077ff;
+      background-color: #2e8b57;
       color: #fff;
-      border-radius: 30px;
       text-decoration: none;
-      font-size: 1rem;
-      transition: background 0.3s;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      font-size: 16px;
     }
-    a.btn:hover {
-      background: #005fcc;
+
+    .return-link:hover {
+      background-color: #256f47;
+    }
+
+    .sns-section {
+      margin-top: 30px;
+    }
+
+    .sns-message {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .sns-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sns-links a {
+      font-size: 18px;
+      text-decoration: none;
+      color: #444;
+      font-weight: bold;
+      transition: transform 0.2s, color 0.3s;
+    }
+
+    .sns-links a:hover {
+      transform: scale(1.2);
+      color: #e91e63;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>スレッドを<br>作成しました</h1>
-    <p>🎉 あなたのスレッドが投稿されました！</p>
-    <a class="btn" href="/threads/<%= threadId %>">作成したスレッドを見る →</a>
+  <div class="success-box">
+    <h1>🎆 スレッド作成完了！</h1>
+    <p>あなたのスレッドが無事に投稿されました。</p>
+    <a class="return-link" href="/threads/<%= threadId %>">スレッドを確認する</a>
+
+    <div class="sns-section">
+      <div class="sns-message">よければSNSフォローもぜひ👇</div>
+      <div class="sns-links">
+        <a href="https://www.instagram.com/riku0128123" target="_blank" title="Instagram">📷 Instagram</a>
+        <a href="https://www.tiktok.com/@riku6701" target="_blank" title="TikTok">🎵 TikTok</a>
+      </div>
+    </div>
   </div>
 </body>
 </html>

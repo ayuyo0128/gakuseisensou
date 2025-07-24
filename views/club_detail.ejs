@@ -107,7 +107,15 @@
         <a href="/clubs/<%= club.id %>?sort=popular&page=1" class="btn">人気順</a>
       </div>
     </div>
-
+    <form action="/search" method="GET" style="margin-bottom:20px;">
+      <input type="text" name="q" placeholder="スレッドを検索" value="<%= typeof q !== 'undefined' ? q : '' %>">
+      <% if (typeof club !== 'undefined' && club) { %>
+        <input type="hidden" name="club_id" value="<%= club.id %>">
+      <% } %>
+      <button type="submit">検索</button>
+    </form>
+    
+    
     <h2 class="center"><%= club.name %></h2>
 
     <% if (threads.length) { %>

@@ -27,13 +27,6 @@
       max-width: 1200px;
       margin: 0 auto;
     }
-    .ad-space {
-      width: 15%;
-      background-color: #e0e0e0;
-      padding: 10px;
-      text-align: center;
-      font-size: 12px;
-    }
 
     .thread-content {
       flex: 1;
@@ -97,10 +90,6 @@
       margin-top: 5px;
       margin-left: 30px;
     }
-    .delete-form input {
-      padding: 1px;
-      margin-right: 4px;
-    }
 
     .response-number {
       color: blue;
@@ -134,6 +123,7 @@
       margin-top: 30px;
       padding-top: 20px;
     }
+
     .form-area input,
     .form-area textarea,
     .form-area button {
@@ -143,74 +133,20 @@
       margin-bottom: 10px;
     }
 
-    /* スマホ向け調整 */
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
         padding: 0;
       }
-      .ad-space {
-        display: none;
-      }
-      .thread-content {
-        padding: 1px;
-      }
       .thread-title {
         font-size: 2rem;
         padding: 1px;
       }
-      .thread-delete-form {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .thread-delete-form input,
-      .thread-delete-form button {
-        width: 100%;
-        padding: 5px;
-        font-size: 0.9rem;
-      }
-      .response {
-        padding: 8px 0;
-      }
-
-      .response-header {
-        margin-left: 0px;
-        font-size: 1rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2px;
-        align-items: baseline;
-      }
-
-      .response-name {
-        color: #2e8b57;
-        font-weight: bold;
-        font-size: 0.8rem;
-      }
-
-      .response-id,
-      .response-time {
-        color: #888;
-        font-size: 0.6rem;
-      }
-
       .response-text {
-        margin-left: 30px;
-        font-size: 0.9rem;
-      }
-
-      .form-area {
-        margin-top: 20px;
-        padding-top: 16px;
-      }
-      .form-area input,
-      .form-area textarea,
-      .form-area button {
+        margin-left: 20px;
         font-size: 0.95rem;
-        padding: 8px;
       }
     }
-
   </style>
 </head>
 <body>
@@ -221,61 +157,47 @@
       <div class="thread-title-area">
         <div class="thread-title"><%= thread.title %></div>
         <form class="thread-delete-form" action="/threads/<%= thread.id %>/delete" method="POST" onsubmit="return confirm('本当に削除しますか？')">
-          <input type="password" name="delete_password" placeholder="削除用パスワード" required>
+          <input type="password" name="deletepassword" placeholder="削除用パスワード" required>
           <button type="submit">削除</button>
         </form>
       </div>
 
       <% responses.forEach(function(response, index) { %>
         <div class="response">
-          <div class="response-number" onclick="insertReply(<%= index + 1 %>)">
-            <%= index + 1 %>
-          </div>
-
-          <!-- ゴミ箱アイコン -->
+          <div class="response-number" onclick="insertReply(<%= index + 1 %>)"><%= index + 1 %></div>
           <button class="delete-toggle" onclick="toggleDeleteForm(<%= response.id %>)">🗑️</button>
-
           <div class="response-header">
             <span class="response-name"><%= response.name || '名無しの学生' %></span>
             <span class="response-id">[ID:<%= response.anon_id %>]</span>
-            <span class="response-time">[
-              <%= new Date(response.created_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) %>
-            ]</span>
+            <span class="response-time">[<%= new Date(response.created_at).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) %>]</span>
           </div>
-
-          <div class="response-text">
-            <%- (response.text || '').replace(/\n/g, "<br>") %>
-          </div>
-
+          <div class="response-text"><%- (response.text || '').replace(/\n/g, "<br>") %></div>
+    
           <% if (response.image_filename) { %>
             <div class="response-image">
-              <img src="/uploads/<%= response.image_filename %>" alt="attached image">
+              <!-- URL表示 -->
+              <p>URL: <a href="https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %>" target="_blank">https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %></a></p>
             </div>
           <% } %>
-
-          <!-- 削除フォーム（初期は非表示） -->
-          <form method="POST" action="/responses/<%= response.id %>/delete"
-                id="delete-form-<%= response.id %>" class="delete-form"
-                onsubmit="return confirm('このレスを本当に削除しますか？')">
+    
+          <form method="POST" action="/responses/<%= response.id %>/delete" id="delete-form-<%= response.id %>" class="delete-form" onsubmit="return confirm('このレスを本当に削除しますか？')">
             <input type="password" name="delete_password" placeholder="削除パス" required>
             <button type="submit">削除</button>
           </form>
         </div>
       <% }); %>
-
+    
       <div class="form-area">
         <form action="/alert" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
           <input type="hidden" name="threadId" value="<%= thread.id %>">
-          <input type="text" name="name" placeholder="名前（任意）">
+          <input type="text" name="name" placeholder="名前（任意)">
           <textarea name="content" id="replyBox" rows="4" placeholder="コメントを入力してください" required></textarea>
-          <input type="file" name="image" accept="image/*"> <!-- 画像添付 -->
+          <input type="file" name="image" accept="image/*">
           <input type="password" name="delete_password" placeholder="削除用パスワード" required>
           <button type="submit">書き込む（確認）</button>
         </form>
       </div>
-
     </div>
-  </div>
 
   <script>
     function insertReply(number) {
@@ -292,8 +214,9 @@
     }
     function toggleDeleteForm(id) {
       const form = document.getElementById(`delete-form-${id}`);
-      if (!form) return console.warn(`フォーム not found: delete-form-${id}`);
-      form.style.display = form.style.display === 'block' ? 'none' : 'block';
+      if (form) {
+        form.style.display = form.style.display === 'block' ? 'none' : 'block';
+      }
     }
   </script>
 </body>
