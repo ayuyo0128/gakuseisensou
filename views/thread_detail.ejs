@@ -173,13 +173,27 @@
           </div>
           <div class="response-text"><%- (response.text || '').replace(/\n/g, "<br>") %></div>
     
-          <% if (response.image_filename) { %>
-            <div class="response-image">
-              <!-- URL表示 -->
-              <p>URL: <a href="https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %>" target="_blank">https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %></a></p>
-            </div>
-          <% } %>
-    
+        <% if (response.image_filename) { %>
+  <div class="response-image">
+    <!-- ①既存の URL リンク -->
+    <p>
+      URL:
+      <a
+        href="https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %>"
+        target="_blank"
+      >
+        https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %>
+      </a>
+    </p>
+    <!-- ②画像プレビューを追加 -->
+    <img
+      src="https://storage.googleapis.com/<%= bucketName %>/<%= response.image_filename %>"
+      alt="添付画像"
+      style="max-width: 200px; margin-top: 5px;"
+    >
+  </div>
+<% } %>
+
           <form method="POST" action="/responses/<%= response.id %>/delete" id="delete-form-<%= response.id %>" class="delete-form" onsubmit="return confirm('このレスを本当に削除しますか？')">
             <input type="password" name="delete_password" placeholder="削除パス" required>
             <button type="submit">削除</button>
@@ -187,19 +201,19 @@
         </div>
       <% }); %>
     
-      <div class="form-area">
-        <form action="/alert" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
-          <input type="hidden" name="threadId" value="<%= thread.id %>">
-          <input type="text" name="name" placeholder="名前（任意)">
-          <textarea name="content" id="replyBox" rows="4" placeholder="コメントを入力してください" required></textarea>
-          <input type="file" name="image" accept="image/*">
-          <input type="password" name="delete_password" placeholder="削除用パスワード" required>
-          <button type="submit">書き込む（確認）</button>
-        </form>
-      </div>
-    </div>
-
-  <script>
+<div class="form-area">
+  <form action="/responses/confirm" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+    <input type="hidden" name="threadId" value="<%= thread.id %>">
+    <input type="text" name="name" placeholder="名前（任意)">
+    <textarea name="content" id="replyBox" rows="4" placeholder="コメントを入力してください" required></textarea>
+    <input type="file" name="image" accept="image/*">
+    <input type="password" name="delete_password" placeholder="削除用パスワード" required>
+    <button type="submit">書き込む（確認）</button>
+  </form>
+</div>
+   </div>  
+ </div>   
+<script>
     function insertReply(number) {
       const replyBox = document.getElementById("replyBox");
       replyBox.value += `>>${number}\n`;
